@@ -1,0 +1,15 @@
+CREATE DISTRIBUTED QUERY get_data(INT groups, INT groupId) FOR GRAPH Amazon_OGB_Test { 
+  ListAccum<ListAccum<DOUBLE>> @@userEmbeddings;
+  ListAccum<ListAccum<DOUBLE>> @@bookEmbeddings;
+  ListAccum<DOUBLE> @@ratings;
+  
+  start = {User.*};
+  
+  res = SELECT s FROM start:s-(:r)-Book:b 
+        WHERE getvid(s) % groups == groupId
+        ACCUM @@userEmbeddings += s.embedding,
+              @@bookEmbeddings += b.embedding,
+              @@ratings += r.score;
+  
+  PRINT @@userEmbeddings, @@bookEmbeddings,@@ratings;
+}
